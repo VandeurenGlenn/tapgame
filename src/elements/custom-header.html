@@ -1,0 +1,42 @@
+<template>
+	<style>
+		:host {
+			display: block;
+			position: relative;
+			width: 100%;
+			background: #222222;
+      z-index: 100;
+		}
+		::slotted(.main-toolbar) {
+			height: 576px;
+			display: block;
+			/*background-color: #222222;*/
+			/*background-image: url('sources/images/header.jpg');*/
+			background-position: center;
+			background-repeat: no-repeat;
+			background-size: cover;
+			background-blend-mode: overlay;
+		}
+		::slotted(.condensed-toolbar) {
+			position: relative;
+			margin-top: -54px;
+			background: transparent;
+			/*opacity: 0;
+			display: none;*/
+		}
+		::slotted(.condensed-toolbar.condensed) {
+			background: #222222;
+			margin: 0;
+			display: block;
+			opacity: 1;
+			position: fixed;
+			bottom: 0;
+			left: 0;
+			right: 0;
+		}
+		::slotted([hidden]) {
+			opacity: 0;
+		}
+	</style>
+	<slot></slot>
+</template>

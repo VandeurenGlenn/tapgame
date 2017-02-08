@@ -1,0 +1,46 @@
+<template>
+  <style>
+    :host {
+      display: inline-block;
+      z-index: 0;
+      cursor: pointer;
+      user-select: none;
+      min-width: var(--custom-button-min-width, 5.14em);
+		}
+		:host(.pressed) button {
+			box-shadow: none;
+		}
+    :host([no-shadow]) button {
+      box-shadow: none;
+    }
+    :host([disabled]), :host([disabled]) button {
+      pointer-events: none;
+      color: var(--custom-button-disabled-color, #999);
+      box-shadow: none;
+    }
+    button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: var(--custom-button-height, 48px);
+      width: var(--custom-button-width);
+      min-width: var(--custom-button-min-width, 5.14em);
+      border-radius: var(--custom-button-border-radius, 3px);
+      background: var(--custom-button-background, transparent);
+      padding: 0.7em 0.57em;
+      box-sizing: border-box;
+      text-transform: uppercase;
+      user-select: none;
+      overflow: hidden;
+      cursor: pointer;
+      outline: none;
+      border: none;
+      color: var(--custom-button-color, #333);
+      border-radius: var(--custom-button-border-radius, 3px);
+			box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+                  0 1px 5px 0 rgba(0, 0, 0, 0.12),
+                  0 3px 1px -2px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+  <button type="button"><slot></slot></button>
+</template>

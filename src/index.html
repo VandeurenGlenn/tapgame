@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+
+    <title>TAPGAME</title>
+    <meta name="description" content="TapGame Ultimate">
+
+    <!-- Mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Chrome / Android -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="black">
+    <link rel="icon" href="icon.png">
+
+    <!-- Safari / iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" href="apple-touch-icon.png">
+
+    <!-- Load Web Components when not supported-->
+    <script>
+      var webComponentsSupported = ('registerElement' in document
+          && 'import' in document.createElement('link')
+          && 'content' in document.createElement('template'));
+
+      if (!webComponentsSupported) {
+        var script = document.createElement('script');
+        script.src = 'bower_components/webcomponentsjs/webcomponents-lite.js';
+        document.head.appendChild(script);
+      }
+    </script>
+
+    <style>
+      body {
+        margin: 0;
+        height: 100%;
+        width: 100%;
+        position: absolute;
+        --header-height: 192px;
+      }
+      tap-game {
+        display: flex;
+        flex-direction: column;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        position: absolute;
+        background: rgb(234, 248, 248);
+        overflow: hidden;
+      }
+      custom-header {
+        position: relative;
+        display: block;
+        height: var(--header-height);
+        width: 100%;
+        background: rgb(91, 208, 212);
+        color: #FFF;
+      }
+      .main-toolbar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: var(--header-height);
+      }
+      .main-toolbar .login-button {
+        position: absolute;
+        right: 24px;
+        top: 24px;
+      }
+      .condensed-toolbar {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 54px;
+        box-sizing: border-box;
+        padding: 12px 24px;
+        background: transparent;
+      }
+      .condensed-toolbar.condensed {
+        bottom: 0;
+        left: 0;
+        right: 0;
+        position: fixed;
+        background: rgb(27, 159, 156);
+      }
+      .condensed-toolbar .login-button {
+        opacity: 0;
+        display: none;
+      }
+      .condensed-toolbar.condensed .login-button {
+        opacity: 1;
+        display: inherit;
+      }
+      .apptitle {
+        text-transform: uppercase;
+      }
+      .flex {
+        flex: 1;
+      }
+      nav a.nav-item {
+        text-decoration: none;
+        text-transform: uppercase;
+        color: #FFF;
+      }
+      custom-fab {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+      }
+      @media (min-width: 400px) {
+        .apptitle {
+          font-size: 48px;
+        }
+        custom-fab {
+          bottom: 48px;
+          right: 48px;
+        }
+      }
+      @media (min-width: 960px) {
+        custom-fab {
+          bottom: 56px;
+          right: 56px;
+        }
+      }
+      custom-pages custom-section, custom-dialog {
+        opacity: 0;
+      }
+      custom-pages custom-section[name="home"] {
+        background: none;
+        box-shadow: none;
+      }
+      .button-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+      }
+      .button-wrapper custom-button {
+        padding-bottom: 24px;
+        --custom-button-min-width: 120px;
+      }
+      custom-container {
+        display: none;
+      }
+      custom-section.custom-selected custom-container[resolved] {
+        display: flex;
+      }
+      .toolbar {
+        height: 56px;
+        display: flex;
+        flex-direction: row;
+      }
+      .game-counter, .back {
+        opacity: 0;
+      }
+      custom-header.condensed .game-counter, custom-header.condensed .back {
+        opacity: 1;
+      }
+      .stretch {
+        width: 64px;
+      }
+      .align-right {
+        display: flex;
+        justify-content: flex-end;
+      }
+      .game-dialog-actions {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        --svg-icon-color: #888;
+      }
+    </style>
+  </head>
+  <body>
+    <tap-game>
+      <custom-header>
+        <div class="main-toolbar">
+          <h1 class="apptitle">
+            TapGame
+          </h1>
+        </div>
+        <div class="condensed-toolbar">
+          <nav class="stretch">
+            <a class="nav-item back" href="#home"><svg-icon icon="back"></svg-icon></a>
+          </nav>
+          <span class="flex"></span>
+          <div class="tap-counter"></div>
+          <span class="flex"></span>
+          <div class="game-counter stretch align-right"></div>
+        </div>
+      </custom-header>
+      <custom-pages animations='{"home": {"delay": 300, "in": "translateY(100%)", "transition-delay": 600, "out": "translateY(-100%)"}, "playfield": {"delay": 300, "in": "translateY(-100%)", "transition-delay": 300, "out": "translateY(100%)"}}'>
+        <custom-section name="home">
+          <custom-container>
+            <span class="button-wrapper">
+              <custom-button class="start">start</custom-button>
+              <custom-button disabled>highscores</custom-button>
+              <!-- <custom-button class="login-button">login</custom-button> -->
+            </span>
+          </custom-container>
+        </custom-section>
+        <custom-section name="playfield">
+          <custom-container>
+            <tap-button></tap-button>
+          </custom-container>
+        </custom-section>
+      </custom-pages>
+      <custom-dialog class="login-dialog">
+        <h1 slot="header">Login</h1>
+        <div slot="content">
+          <input type="text" name="" value="">
+          <input type="password" name="" value="">
+        </div>
+      </custom-dialog>
+
+      <custom-dialog class="game-dialog">
+        <h1 slot="header" class="title">Login</h1>
+        <div slot="content">
+          <h4>result</h4>
+          <span class="result"></span>
+          <h4>goal</h4>
+          <span class="goal"></span>
+        </div>
+
+        <div slot="actions" class="game-dialog-actions">
+          <svg-icon icon="back"></svg-icon>
+          <span class="flex"></span>
+          <svg-icon icon="refresh"></svg-icon>
+          <span class="flex"></span>
+          <svg-icon icon="forward"></svg-icon>
+        </div>
+      </custom-dialog>
+      <custom-count-down></cutom-count-down>
+      <custom-icons></custom-icons>
+    </tap-game>
+  </body>
+  <script src="index.js"></script>
+</html>

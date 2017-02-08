@@ -1,0 +1,39 @@
+<template>
+  <style>
+    :host {
+      height: calc(100% - 192px);
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+    .container {
+      height: 100%;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      border-radius: 3px;
+    }
+    :host(.condensed) {
+      height: calc(100% - 54px);
+    }
+    .container ::slotted(*) {
+      display: none;
+      position: absolute;
+    }
+    .container ::slotted(*.custom-selected) {
+      display: block;
+      opacity: 1 !important;
+    }
+    @media (min-width: 1200px) {
+      :host {
+        padding: 64px;
+      }
+    }
+  </style>
+  <span class="container">
+    <slot></slot>
+  </span>
+</template>

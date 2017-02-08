@@ -1,0 +1,15 @@
+export default [
+  {
+    "tapSize": "200",
+    "time": 5000,
+    "goal": 100
+  }, {
+    "tapSize": "180",
+    "time": 5000,
+    "goal": 105
+  }, {
+    "tapSize": "160",
+    "time": 5000,
+    "goal": 110
+  }
+]

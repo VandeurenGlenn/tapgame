@@ -1,0 +1,73 @@
+<template>
+  <style>
+    :host {
+      display: flex;
+      opacity: 0;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      pointer-events: none;
+    }
+    :host(.opened) {
+      opacity: 1 !important;
+      pointer-events: auto;
+    }
+    .backdrop {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.78);
+    }
+    .dialog {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      display: flex;
+      flex-direction: column;
+      min-height: 320px;
+      min-width: 240px;
+      transform: translate(-50%, -50%);
+      background: #FFF;
+      padding: 4px 10px;
+      box-sizing: border-box;
+      color: #888;
+    }
+    .actions-bar {
+      display: flex;
+      flex-direction: row;
+      height: 48px;
+    }
+    .flex {
+      flex: 1;
+    }
+    .content-wrapper {
+      padding: 0 8px;
+      flex: 1;
+    }
+    slot[name="content"]::slotted(*) {
+      display: flex;
+      flex-direction: column;
+    }
+    slot[name="header"]::slotted(*) {
+      padding: 0 8px;
+    }
+  </style>
+  <span class="backdrop"></span>
+  <div class="dialog">
+    <slot name="header"></slot>
+    <div class="content-wrapper">
+      <slot name="content"></slot>
+    </div>
+    <span class="actions-bar">
+      <slot name="actions">
+        <custom-button no-shadow>cancel</custom-button>
+        <span class="flex"></span>
+        <custom-button no-shadow>ok</custom-button>
+      </slot>
+    </span>
+  </div>
+</template>
