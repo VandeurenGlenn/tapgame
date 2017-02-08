@@ -28,6 +28,9 @@ export default class CustomHeader extends HTMLElement {
 	get condensedAppname() {
 		return this.condensedToolbar.querySelector('.appname');
 	}
+	get condensed() {
+		return this._condensed || false;
+	}
   set condensed(value) {
     if (value) {
       this.condensedToolbar.classList.add('condensed');
@@ -37,6 +40,7 @@ export default class CustomHeader extends HTMLElement {
       this.condensedToolbar.classList.remove('condensed');
       this.classList.remove('condensed');
     }
+		this._condensed = value;
   }
  	_onScroll() {
 		let top = this.scrollElement.scrollTop;
