@@ -43,12 +43,16 @@ export default class CustomPages extends HTMLElement {
     if (this.previousSelected) {
       const el = this.querySelector(this._previousSelectedQuery);
       this.animate(this.previousSelected, 'out').then(() => {
-        el.classList.remove('custom-selected');
+        requestAnimationFrame(() => {
+          el.classList.remove('custom-selected');
+        });
       });
     }
     this.animate(value).then(() => {
-      this.querySelector(`*[${this.attrForSelected}="${value}"]`)
-        .classList.add('custom-selected');
+      requestAnimationFrame(() => {
+        this.querySelector(`*[${this.attrForSelected}="${value}"]`)
+          .classList.add('custom-selected');
+      });
     });
 
     this.previousSelected = value;
@@ -60,16 +64,22 @@ export default class CustomPages extends HTMLElement {
       if (animation) {
         let el = this.querySelector(`*[${this.attrForSelected}="${name}"]`);
         if (out) {
-          el.style.transform = animation.out;
-          el.style.transition =
-          `transform ease-out ${animation['transition-delay'] || 0}ms`;
+          requestAnimationFrame(() => {
+            el.style.transform = animation.out;
+            el.style.transition =
+            `transform ease-out ${animation['transition-delay'] || 0}ms`;
+          });
         } else {
-          el.style.transform = animation.in;
-          el.style.transition =
-          `transform ease-out ${animation['transition-delay'] || 0}ms`;
+          requestAnimationFrame(() => {
+            el.style.transform = animation.in;
+            el.style.transition =
+            `transform ease-out ${animation['transition-delay'] || 0}ms`;
+          });
         }
         setTimeout(() => {
-          el.style.transform = 'translateY(0)';
+          requestAnimationFrame(() => {
+            el.style.transform = 'translateY(0)';
+          });
           resolve();
         }, animation.delay);
       } else
