@@ -101,7 +101,6 @@ export default class TapGame extends HTMLElement {
   }
 
   _onLoginButtonTap() {
-    console.log('ta');
     this._loginDialog.opened = !this._loginDialog.opened;
   }
 
@@ -200,7 +199,6 @@ export default class TapGame extends HTMLElement {
   }
 
   _hideToolbar() {
-    // this._headerElement.style.transform = 'translateY(-100%)';
     this._headerElement.style.transition = 'transform ease-out 300ms';
     this._headerElement.condensed = true;
     this.pages.condensed = true;
