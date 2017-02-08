@@ -19,16 +19,40 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <link rel="apple-touch-icon-precomposed" href="apple-touch-icon.png">
 
-    <!-- Load Web Components when not supported-->
+    <!-- Load Shadow DOM / Custom Elements when not supported-->
     <script>
-      var webComponentsSupported = ('registerElement' in document
-          && 'import' in document.createElement('link')
-          && 'content' in document.createElement('template'));
+      let _unSupportedSet = [];
+      const loadScript = src => {
+       return new Promise((resolve, reject) => {
+         const script = document.createElement('script');
+         script.async = true;
+         script.src = src;
+         script.onload = resolve;
+         script.onerror = reject;
+         document.head.appendChild(script);
+       });
+      }
+      const supportsShadowDOMV1 = !!HTMLElement.prototype.attachShadow;
+      const supportsCustomElementsV1 = 'customElements' in window;
+      if (!supportsCustomElementsV1) {
+        loadScript(
+          'bower_components/custom-elements/custom-elements.min.js'
+        ).then(() => {
+          if (!supportsShadowDOMV1) {
+            _unSupportedSet
+              .push(loadScript('/bower_components/shadydom/shadydom.min.js'));
 
-      if (!webComponentsSupported) {
-        var script = document.createElement('script');
-        script.src = 'bower_components/webcomponentsjs/webcomponents-lite.js';
-        document.head.appendChild(script);
+            _unSupportedSet
+              .push(loadScript('/bower_components/shadycss/shadycss.min.js'));
+          }
+          if (_unSupportedSet.length) {
+            Promise.all(_unSupportedSet).then(() => {
+              loadScript('index.js');
+            });
+          }
+        });
+      } else {
+        loadScript('index.js');
       }
     </script>
 
@@ -132,6 +156,7 @@
       }
       custom-pages custom-section, custom-dialog {
         opacity: 0;
+        display: none;
       }
       custom-pages custom-section[name="home"] {
         background: none;
@@ -177,6 +202,10 @@
         display: flex;
         align-items: center;
         --svg-icon-color: #888;
+      }
+
+      custom-section.custom-selected {
+        display: block;
       }
     </style>
   </head>
@@ -239,9 +268,8 @@
           <svg-icon icon="forward"></svg-icon>
         </div>
       </custom-dialog>
-      <custom-count-down></cutom-count-down>
+      <custom-count-down></custom-count-down>
       <custom-icons></custom-icons>
     </tap-game>
   </body>
-  <script src="index.js"></script>
 </html>

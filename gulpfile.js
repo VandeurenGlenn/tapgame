@@ -78,7 +78,7 @@ task('copy:app', () => {
 
 task('copy:components', () => {
   return src([
-    'bower_components/**/{firebase-app,firebase-auth,firebase-database}.js']
+    'bower_components/**/{firebase-app,firebase-auth,firebase-database,custom-elements.min,shadycss.min,shadydom.min}.js']
   ).pipe(dest('build/bower_components'));
 });
 

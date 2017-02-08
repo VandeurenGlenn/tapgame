@@ -22,7 +22,10 @@
   ],
   "dependencies": {
     "firebase": "^3.6.7",
-    "pouchdb": "^6.1.1"
+    "pouchdb": "^6.1.1",
+    "shadydom": "webcomponents/shadydom",
+    "shadycss": "webcomponents/shadycss",
+    "custom-elements": "webcomponents/custom-elements"
   },
   "devDependencies": {
     "svg-iconset": "vandeurenglenn/svg-iconset",
