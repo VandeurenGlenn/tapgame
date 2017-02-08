@@ -26,7 +26,8 @@
   },
   "devDependencies": {
     "svg-iconset": "vandeurenglenn/svg-iconset",
-    "svg-icon": "vandeurenglenn/svg-icon#master"
+    "svg-icon": "vandeurenglenn/svg-icon#master",
+    "web-component-tester": "^5.0.0"
   },
   "resolutions": {
     "svg-icon": "master"
