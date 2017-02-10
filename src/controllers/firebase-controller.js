@@ -1,24 +1,28 @@
 'use strict';
-import config from './../trendystore.config.js';
 import PubSubLoader from './../internals/pub-sub-loader.js';
-
+const config = {
+  apiKey: "AIzaSyDxwMmGWtZNsnUJiYq73PTyL2A99eVS5CA",
+  databaseURL: "https://tapgame-158121.firebaseio.com",
+  authDomain: "tapgame-158121.firebaseapp.com"
+}
 export default class FirebaseController extends HTMLElement {
   constructor() {
     super();
+    PubSubLoader();
   }
   connectedCallback() {
-    PubSubLoader();
     try {
       this.initApp(config.firebase);
     } catch (e) {
-      let promises = [this._importScript('bower_components/firebase/firebase-app.js'),
-      this._importScript('bower_components/firebase/firebase-auth.js'),
-      this._importScript('bower_components/firebase/firebase-database.js')];
+      let promises = [
+        this._importScript('bower_components/firebase/firebase-app.js'),
+        this._importScript('bower_components/firebase/firebase-auth.js'),
+        this._importScript('bower_components/firebase/firebase-database.js')
+      ]
 
       Promise.all(promises).then(() => {
         // Initialize Firebase onload
-        this.initApp(config.firebase);
-        PubSub.publish('firebase.ready', true);
+        this.initApp(config);
       });
     }
   }
@@ -38,6 +42,7 @@ export default class FirebaseController extends HTMLElement {
   }
   initApp(config) {
     firebase.initializeApp(config);
+    PubSub.publish('firebase.ready', true);
   }
 }
 customElements.define('firebase-controller', FirebaseController);

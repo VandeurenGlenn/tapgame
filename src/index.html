@@ -207,12 +207,31 @@
       custom-section.custom-selected {
         display: block;
       }
+      .horizontal {
+        display: flex;
+        align-items: center;
+      }
+      .dialog-label {
+        margin: 0;
+        padding: 12px 6px;
+      }
+      .__dialog-highscores {
+        text-align: center;
+        padding-top: 36px;
+      }
+      custom-container[list] .horizontal {
+        width: 100%;
+      }
+      array-repeat {
+        width: 100%;
+      }
     </style>
   </head>
   <body>
     <tap-game>
       <custom-header>
         <div class="main-toolbar">
+          <custom-button class="login-button" title="Login" no-shadow></custom-button>
           <h1 class="apptitle">
             TapGame
           </h1>
@@ -222,18 +241,20 @@
             <a class="nav-item back" href="#home"><svg-icon icon="back"></svg-icon></a>
           </nav>
           <span class="flex"></span>
+          <h1 class="__condensed-title"></h1>
           <div class="tap-counter"></div>
           <span class="flex"></span>
           <div class="game-counter stretch align-right"></div>
         </div>
       </custom-header>
-      <custom-pages animations='{"home": {"delay": 300, "in": "translateY(100%)", "transition-delay": 600, "out": "translateY(-100%)"}, "playfield": {"delay": 300, "in": "translateY(-100%)", "transition-delay": 300, "out": "translateY(100%)"}}'>
+      <custom-pages animations='{"home": {"delay": 300, "in": "translateY(100%)", "transition-delay": 600, "out": "translateY(-100%)"}, "playfield": {"delay": 300, "in": "translateY(-100%)", "transition-delay": 300, "out": "translateY(100%)"}, "highscores": {"delay": 300, "in": "translateY(-100%)", "transition-delay": 300, "out": "translateY(100%)"}}'>
         <custom-section name="home">
           <custom-container>
             <span class="button-wrapper">
               <custom-button class="start">start</custom-button>
-              <custom-button disabled>highscores</custom-button>
-              <!-- <custom-button class="login-button">login</custom-button> -->
+              <a href="#highscores">
+                <custom-button>highscores</custom-button>
+              </a>
             </span>
           </custom-container>
         </custom-section>
@@ -242,28 +263,47 @@
             <tap-button></tap-button>
           </custom-container>
         </custom-section>
+        <custom-section name="highscores">
+          <custom-container list>
+            <span class="horizontal">
+              <h4>name</h4>
+              <span class="flex"></span>
+              <h4>score</h4>
+            </span>
+            <array-repeat class="__highscores-list">
+              <template>
+                <span style="display: flex; flex-direction: row; align-items: center; width: 100%;">
+                  [[item.name]]
+                  <span style="flex: 1;"></span>
+                  [[item.score]]
+                </span>
+              </template>
+            </array-repeat>
+          </custom-container>
+        </custom-section>
       </custom-pages>
-      <custom-dialog class="login-dialog">
-        <h1 slot="header">Login</h1>
-        <div slot="content">
-          <input type="text" name="" value="">
-          <input type="password" name="" value="">
-        </div>
-      </custom-dialog>
 
       <custom-dialog class="game-dialog">
         <h1 slot="header" class="title">Login</h1>
-        <div slot="content">
-          <h4>result</h4>
-          <span class="result"></span>
-          <h4>goal</h4>
-          <span class="goal"></span>
+        <div slot="content" class="__dialog-content">
+          <span class="horizontal">
+            <h4 class="dialog-label">result</h4>
+            <span class="result"></span>
+          </span>
+          <span class="horizontal">
+            <h4 class="dialog-label">goal</h4>
+            <span class="goal"></span>
+          </span>
+
+          <span class="__dialog-highscores"></span>
         </div>
 
         <div slot="actions" class="game-dialog-actions">
           <svg-icon icon="back"></svg-icon>
           <span class="flex"></span>
-          <svg-icon icon="refresh"></svg-icon>
+          <custom-button no-shadow>
+            <svg-icon icon="refresh" class="__refresh"></svg-icon>
+          </custom-button>
           <span class="flex"></span>
           <svg-icon icon="forward"></svg-icon>
         </div>

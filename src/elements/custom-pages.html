@@ -21,7 +21,6 @@
     }
     .container ::slotted(*) {
       display: none;
-      position: absolute;
     }
     .container ::slotted(*.custom-selected) {
       display: block;
@@ -30,6 +29,7 @@
     @media (min-width: 1200px) {
       :host {
         padding: 64px;
+        box-sizing: border-box;
       }
     }
   </style>

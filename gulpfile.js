@@ -55,10 +55,10 @@ task('rollup:run', () => {
 
     bundle.write({
       format: 'iife',
-      moduleName: 'TapGame',
+      moduleName: 'tapGame',
       plugins: [
-        babel(),
-        json()
+        json(),
+        babel()
       ],
       dest: 'build/index.js'
     });

@@ -7,22 +7,30 @@ import './elements/custom-container.js';
 import './elements/custom-count-down.js';
 import './elements/tap-button.js';
 import './elements/custom-icons.js';
+import './../bower_components/array-repeat/dist/array-repeat.es.js';
+import CustomNotification from './elements/custom-notification.js';
 import PubSubLoader from './internals/pub-sub-loader.js';
 import levels from './sources/levels.json';
+import FirebaseController from './controllers/firebase-controller.js';
 export default class TapGame extends HTMLElement {
   constructor() {
     super();
-    // this._onLoginButtonTap = this._onLoginButtonTap.bind(this);
+    this._onLoginButtonTap = this._onLoginButtonTap.bind(this);
+    this.error = this.error.bind(this);
+    this._newUID = this._newUID.bind(this);
     this._locationHashChanged = this._locationHashChanged.bind(this);
     this._startGame = this._startGame.bind(this);
     this._onClick = this._onClick.bind(this);
     this._onCountDownMessage = this._onCountDownMessage.bind(this);
-
+    this._onFirebaseReady = this._onFirebaseReady.bind(this);
+    this.refresh = this.refresh.bind(this);
+    const firebaseController = new FirebaseController();
+    this.appendChild(firebaseController);
     PubSubLoader();
   }
   connectedCallback() {
     // if (!this.user) {
-      // document.querySelector('.login-button').addEventListener('tap', this._onLoginButtonTap);
+      this._loginButton.addEventListener('tap', this._onLoginButtonTap);
     // }
     window.onhashchange = this._locationHashChanged;
     if (!window.location.hash) {
@@ -31,7 +39,14 @@ export default class TapGame extends HTMLElement {
       this._locationHashChanged({newURL: window.location.hash})
     }
     this._startButton.addEventListener('click', this._startGame);
-    this.addEventListener('click', this._onClick);
+    // this._highscoresButton.addEventListener('click', this._startGame);
+    this._tapButton.addEventListener('tap', this._onClick);
+    this._refreshButton.addEventListener('click', this.refresh);
+    PubSub.subscribe('firebase.ready', this._onFirebaseReady)
+  }
+
+  get _loginButton() {
+    return this.querySelector('.login-button');
   }
 
   get _startButton() {
@@ -75,6 +90,10 @@ export default class TapGame extends HTMLElement {
     return this._gameDialog.querySelector('.goal');
   }
 
+  get gameDialogHighScores() {
+    return this.querySelector('.__dialog-highscores');
+  }
+
   get _countDownElement() {
     return this.querySelector('custom-count-down');
   }
@@ -91,8 +110,25 @@ export default class TapGame extends HTMLElement {
     return this.querySelector('custom-header');
   }
 
+  get _tapButton() {
+    return this.querySelector('tap-button');
+  }
+
+  get _notificationElement() {
+    const name = 'custom-notification';
+    return this.querySelector(name) || this._setupComponent(name);
+  }
+
+  get userOnline() {
+    return this._userOnline || false;
+  }
+
   get taps() {
     return this._taps || 0;
+  }
+
+  get _condensedTitle() {
+    return this.querySelector('.__condensed-title');
   }
 
   set taps(value) {
@@ -100,14 +136,134 @@ export default class TapGame extends HTMLElement {
     this._tapCounterElement.innerHTML = value;
   }
 
+  get _refreshButton() {
+    return this._gameDialog.querySelector('.__refresh');
+  }
+
+  set userOnline(value) {
+    if (value) {
+      this._loginButton.innerHTML = 'sign out';
+    } else {
+      this._loginButton.innerHTML = 'sign in';
+    }
+    this._userOnline = value;
+  }
+
+  _setupComponent(name, proto, options={properties: [], attributes: []}) {
+    return new Promise(resolve => {
+      // TODO: import vanilla or as customElement when supported
+      const el = document.createElement(name);
+      if (document.querySelector('custom-notification') === null) {
+        if ('customElements' in window) {
+          customElements.define(name, proto);
+        } else {
+          document.registerElement(name, proto);
+        }
+      }
+      const target = options.target || this;
+      const properties = options.properties;
+      const attributes = options.attributes;
+      if (properties && properties.length > 0)
+        for (let property of properties)
+          el[property.name] = property.value;
+
+      if (attributes && attributes.length > 0)
+        for (let attribute of attributes)
+          el.setAttribute(attribute.name, attribute.value);
+
+      target.appendChild(el);
+      resolve(el);
+    });
+  }
+
+  _toJsProp(string) {
+    let parts = string.split('-');
+    if (parts.length > 1) {
+      var upper = parts[0].charAt(0).toUpperCase();
+      u
+      upper += parts[1].charAt(0).toUpperCase();
+      string = parts[0] + upper + parts[1].slice(1).toLowerCase();
+    }
+    return string;
+  }
+
   _onLoginButtonTap() {
-    this._loginDialog.opened = !this._loginDialog.opened;
+    const user = firebase.auth().currentUser;
+    if (user) {
+      firebase.auth().signOut().then(() => {
+        this.showNotification(this._newUID, 'Signed out!');
+      }, this.error);
+    } else {
+      this._googleLogin();
+    }
+  }
+
+  _newUID() {
+    return Math.random().toString(36).slice(-8);
+  }
+
+  _googleLogin() {
+    let provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope('https://www.googleapis.com/auth/plus.login');
+    provider.addScope('https://www.googleapis.com/auth/games');
+    firebase.auth().signInWithPopup(provider).then(result => {
+      // This gives you a Google Access Token. You can use it to access the Google API.
+      var token = result.credential.accessToken;
+      // The signed-in user info.
+      var user = result.user;
+      // ...
+    }).catch(function(error) {
+      // Handle Errors here.
+      var errorCode = error.code;
+      var errorMessage = error.message;
+      // The email of the user's account used.
+      var email = error.email;
+      // The firebase.auth.AuthCredential type that was used.
+      var credential = error.credential;
+      // ...
+    });
   }
 
   _onClick(event) {
+    event.preventDefault();
     if (event.target.localName === 'tap-button' && this._gameRunning) {
       this.taps += 1;
+      console.log(this.taps);
     }
+  }
+
+  _onFirebaseReady() {
+    firebase.database().ref('highscores').on('value', snapshot => {
+      const highscores = snapshot.val();
+      this.querySelector('array-repeat').items = highscores[0];
+    });
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        firebase.database().ref('users/' + user.uid).on('value', snapshot => {
+          let value = snapshot.val();
+          if (value === null) {
+            this._addUser(user);
+          }
+          this.showNotification(
+            this._newUID, 'Welcome, ' + user.displayName + '!');
+        });
+        this.userOnline = true;
+      } else {
+        this.userOnline = false;
+      }
+      this.user = user;
+    });
+  }
+
+  _addUser(user) {
+    firebase.database().ref('users/' + user.uid).set({
+      displayName: user.displayName,
+      email: user.email,
+      photoURL: user.photoURL
+
+    })
+    console.log(user);
   }
 
   _startGame() {
@@ -120,6 +276,17 @@ export default class TapGame extends HTMLElement {
 
   }
 
+  showNotification(uid, text) {
+    this._setupComponent('custom-notification', CustomNotification, {
+      properties: [
+        {name: 'innerHTML', value: text},
+        {name: 'uid', value: uid}
+      ]
+    }).then(component => {
+      component.show();
+    });
+  }
+
   loadLevel(level) {
     PubSub.publish('level.change', level);
     this.startCountDown();
@@ -127,6 +294,8 @@ export default class TapGame extends HTMLElement {
 
   _locationHashChanged(change) {
     let parts = change.newURL.split('#');
+    this._condensedTitle.innerHTML = null;
+    this.taps = null;
     if (parts[1].includes('level')) {
       parts = parts[1].split('-');
       const level = parts[1];
@@ -135,9 +304,13 @@ export default class TapGame extends HTMLElement {
       this.loadLevel(levels[level]);
       this._hideToolbar();
     } else {
+      if (parts[1] === 'home') {
+        this._showToolbar();
+      } else {
+        this._hideToolbar();
+        this._condensedTitle.innerHTML = parts[1];
+      }
       this.selected = parts[1];
-      this._showToolbar();
-      this.taps = 0;
       if (this._countDownWorker) {
         this._countDownWorker.terminate();
         this._countDownElement.counting = false;
@@ -207,14 +380,73 @@ export default class TapGame extends HTMLElement {
   _endGame() {
     this._gameRunning = false;
     const goal = levels[this.level].goal;
-    if (this.taps === goal || this.taps > goal) {
+    const taps = this.taps;
+    const win = () => {
+      if (taps === goal || taps > goal) { return true };
+      return false;
+    }
+
+    if (win()) {
       this._gameDialogTitle.innerHTML = 'level complete';
+      this.gameDialogHighScores.innerHTML = 'Great Job!';
     } else {
+      this.gameDialogHighScores.innerHTML = 'Better luck next time';
       this._gameDialogTitle.innerHTML = 'level failed';
     }
-    this._gameDialogResult.innerHTML = this.taps;
+    this._gameDialogResult.innerHTML = taps;
     this._gameDialogGoal.innerHTML = goal;
+
+    if (this.userOnline) {
+      const userHighscoresLocation =
+        `users/${this.user.uid}/highscores/${this.level}`;
+      const highscoresLocation =
+        `highscores/${this.level}`;
+
+
+      firebase.database()
+        .ref(userHighscoresLocation)
+        .once('value', snapshot => {
+          let value = snapshot.val();
+          if (value === null || value !== null && value < taps) {
+            firebase.database().ref(userHighscoresLocation).set(taps);
+            firebase.database().ref(highscoresLocation).once('value', snapshot => {
+              const holder = snapshot.val();
+              if (holder === null) {
+                firebase.database().ref(highscoresLocation).set({topScore: taps});
+                firebase.database().ref(highscoresLocation).push({name: this.user.displayName, score: taps});
+              } else {
+                if (holder.topScore < taps) {
+                  firebase.database().ref(highscoresLocation).set({topScore: taps});
+                  firebase.database().ref(highscoresLocation).push({name: this.user.displayName, score: taps});
+                } else if (holder.topScore === taps) {
+                  firebase.database().ref(highscoresLocation).push({name: this.user.displayName, score: taps});
+                }
+              }
+            });
+            this.showNotification(this._newUID, 'New Highscore!');
+            this.gameDialogHighScores.innerHTML = 'New Highscore!';
+          }
+      })
+    } else {
+      this.gameDialogHighScores.innerHTML = `
+      <h3>Submit score</h3>
+      <input type="text">
+      not supported yet, please login to submit scores.
+      `;
+    }
+
     this._gameDialog.opened = true;
+  }
+
+  error(error) {
+    console.error(error);
+  }
+
+  refresh() {
+    if (this._gameDialog.opened) {
+      this._gameDialog.opened = false;
+    }
+    this._locationHashChanged({newURL: window.location.hash});
   }
   // TODO: import pages (shards) when idle
 }
