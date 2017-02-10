@@ -87,7 +87,12 @@ task('copy:workers', () => {
   ).pipe(dest('build/workers'));
 });
 
-task('copy', series('copy:app', 'copy:components', 'copy:workers'));
+task('copy:images', () => {
+  return src(['src/sources/**/*.png']
+).pipe(dest('build/sources'));
+});
+
+task('copy', series('copy:app', 'copy:components', 'copy:workers', 'copy:images'));
 
 task('build', series('clean', 'html', 'rollup', 'copy'));
 
