@@ -228,7 +228,6 @@ export default class TapGame extends HTMLElement {
     event.preventDefault();
     if (event.target.localName === 'tap-button' && this._gameRunning) {
       this.taps += 1;
-      console.log(this.taps);
     }
   }
 
