@@ -31,7 +31,8 @@
     "svg-iconset": "vandeurenglenn/svg-iconset",
     "svg-icon": "vandeurenglenn/svg-icon#master",
     "web-component-tester": "^5.0.0",
-    "array-repeat": "vandeurenglenn/array-repeat#^0.2.7"
+    "array-repeat": "vandeurenglenn/array-repeat#^0.2.7",
+    "custom-template-if": "vandeurenglenn/custom-template-if"
   },
   "resolutions": {
     "svg-icon": "master"

@@ -7,7 +7,9 @@ import './elements/custom-container.js';
 import './elements/custom-count-down.js';
 import './elements/tap-button.js';
 import './elements/custom-icons.js';
+import './elements/custom-navigation-item.js';
 import './../bower_components/array-repeat/dist/array-repeat.es.js';
+import './../bower_components/custom-template-if/src/custom-template-if.js';
 import CustomNotification from './elements/custom-notification.js';
 import PubSubLoader from './internals/pub-sub-loader.js';
 import levels from './sources/levels.json';
@@ -19,7 +21,6 @@ export default class TapGame extends HTMLElement {
     this.error = this.error.bind(this);
     this._newUID = this._newUID.bind(this);
     this._locationHashChanged = this._locationHashChanged.bind(this);
-    this._startGame = this._startGame.bind(this);
     this._onClick = this._onClick.bind(this);
     this._onCountDownMessage = this._onCountDownMessage.bind(this);
     this._onFirebaseReady = this._onFirebaseReady.bind(this);
@@ -30,19 +31,20 @@ export default class TapGame extends HTMLElement {
   }
   connectedCallback() {
     // if (!this.user) {
-      this._loginButton.addEventListener('tap', this._onLoginButtonTap);
     // }
     window.onhashchange = this._locationHashChanged;
     if (!window.location.hash) {
-      window.location.hash = 'home'
+      window.location.hash = this._hashbang('home');
     } else {
       this._locationHashChanged({newURL: window.location.hash})
     }
-    this._startButton.addEventListener('click', this._startGame);
+    this._loginButton.addEventListener('tap', this._onLoginButtonTap);
     // this._highscoresButton.addEventListener('click', this._startGame);
     this._tapButton.addEventListener('tap', this._onClick);
     this._refreshButton.addEventListener('click', this.refresh);
+    this._loginButton.addEventListener('tap', this._onLoginButtonTap);
     PubSub.subscribe('firebase.ready', this._onFirebaseReady)
+
   }
 
   get _loginButton() {
@@ -192,6 +194,7 @@ export default class TapGame extends HTMLElement {
     if (user) {
       firebase.auth().signOut().then(() => {
         this.showNotification(this._newUID, 'Signed out!');
+        this.user = null;
       }, this.error);
     } else {
       this._googleLogin();
@@ -236,7 +239,6 @@ export default class TapGame extends HTMLElement {
       const highscores = snapshot.val();
       this.querySelector('array-repeat').items = highscores[0];
     });
-
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
         firebase.database().ref('users/' + user.uid).on('value', snapshot => {
@@ -252,6 +254,7 @@ export default class TapGame extends HTMLElement {
         this.userOnline = false;
       }
       this.user = user;
+      PubSub.publish('player.progress', true);
     });
   }
 
@@ -263,12 +266,6 @@ export default class TapGame extends HTMLElement {
 
     })
     console.log(user);
-  }
-
-  _startGame() {
-    // this.resetCounter();
-    const hash = '#level-' + this.level;
-    location.hash = hash;
   }
 
   _selectLevel(event) {
@@ -287,38 +284,54 @@ export default class TapGame extends HTMLElement {
   }
 
   loadLevel(level) {
+    this._hideToolbar();
+    this.taps = 0;
     PubSub.publish('level.change', level);
     this.startCountDown();
   }
 
-  _locationHashChanged(change) {
-    let parts = change.newURL.split('#');
+  _gameHash() {
+    const hash = this._hashbang('play/level-' + this.level);
+    location.hash = hash;
+  }
+
+  _beforeNavigation() {
     this._condensedTitle.innerHTML = null;
     this.taps = null;
-    if (parts[1].includes('level')) {
-      parts = parts[1].split('-');
-      const level = parts[1];
+    if (this._countDownWorker) {
+      this._countDownWorker.terminate();
+      this._countDownElement.counting = false;
+      this._countDownWorker = undefined;
+    }
+    if (this._gameWorker) {
+      this._gameWorker.terminate();
+      this._gameWorker = undefined;
+    }
+  }
+
+  _locationHashChanged(change) {
+    let parts = change.newURL.split('#');
+    this._beforeNavigation();
+    console.log(parts);
+    if (parts[1].includes('play') && !parts[1].includes('level')) {
+      this._gameHash();
+    } else if (parts[1].includes('level-')) {
+      let level;
+      parts = parts[1].split('/');
+      for (let part of parts) {
+        if (part.includes('level')) {
+          this.loadLevel(levels[part.split('-')[1]]);
+        }
+      }
       this.selected = 'playfield';
-      this.taps = 0;
-      this.loadLevel(levels[level]);
-      this._hideToolbar();
     } else {
       if (parts[1] === 'home') {
         this._showToolbar();
       } else {
         this._hideToolbar();
-        this._condensedTitle.innerHTML = parts[1];
+        this._condensedTitle.innerHTML = parts[1].replace('!/', '');
       }
-      this.selected = parts[1];
-      if (this._countDownWorker) {
-        this._countDownWorker.terminate();
-        this._countDownElement.counting = false;
-        this._countDownWorker = undefined;
-      }
-      if (this._gameWorker) {
-        this._gameWorker.terminate();
-        this._gameWorker = undefined;
-      }
+      this.selected = parts[1].replace('!/', '');
     }
   }
 
@@ -446,6 +459,13 @@ export default class TapGame extends HTMLElement {
       this._gameDialog.opened = false;
     }
     this._locationHashChanged({newURL: window.location.hash});
+  }
+
+  /**
+   * HashBang url (adds a ! infront)
+   */
+  _hashbang(string) {
+    return `!/${string}`;
   }
   // TODO: import pages (shards) when idle
 }

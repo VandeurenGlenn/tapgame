@@ -171,7 +171,7 @@
       }
       .button-wrapper custom-button {
         padding-bottom: 24px;
-        --custom-button-min-width: 120px;
+        --custom-button-min-width: 132px;
       }
       custom-container {
         display: none;
@@ -251,10 +251,31 @@
         <custom-section name="home">
           <custom-container>
             <span class="button-wrapper">
-              <custom-button class="start">start</custom-button>
-              <a href="#highscores">
-                <custom-button>highscores</custom-button>
-              </a>
+              <custom-template-if if="!player.progress">
+                <template>
+                  <style>
+                    custom-navigation-item {
+                      --custom-button-min-width: 132px;
+                    }
+                  </style>
+                  <custom-navigation-item route="play" hashbang>play</custom-navigation-item>
+                </template>
+              </custom-template-if>
+
+              <custom-template-if if="player.progress" pubsub>
+                <template>
+                  <style>
+                    custom-navigation-item {
+                      --custom-button-min-width: 132px;
+                    }
+                  </style>
+                  <custom-navigation-item route="select-level" hashbang disabled>select level</custom-navigation-item>
+                </template>
+              </custom-template-if>
+
+              <custom-navigation-item>highscores</custom-navigation-item>
+              <custom-navigation-item disabled>achievements</custom-navigation-item>
+              <custom-navigation-item disabled>ranking</custom-navigation-item>
             </span>
           </custom-container>
         </custom-section>
