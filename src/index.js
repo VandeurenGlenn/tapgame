@@ -11,10 +11,10 @@ import './elements/custom-navigation-item.js';
 import './../bower_components/array-repeat/dist/array-repeat.es.js';
 import './../bower_components/custom-template-if/src/custom-template-if.js';
 import CustomNotification from './elements/custom-notification.js';
-import PubSubLoader from './internals/pub-sub-loader.js';
 import levels from './sources/levels.json';
-import FirebaseController from './controllers/firebase-controller.js';
-export default class TapGame extends HTMLElement {
+import AppController from './controllers/app-controller.js';
+
+export default class TapGame extends AppController {
   constructor() {
     super();
     this._onLoginButtonTap = this._onLoginButtonTap.bind(this);
@@ -25,13 +25,9 @@ export default class TapGame extends HTMLElement {
     this._onCountDownMessage = this._onCountDownMessage.bind(this);
     this._onFirebaseReady = this._onFirebaseReady.bind(this);
     this.refresh = this.refresh.bind(this);
-    const firebaseController = new FirebaseController();
-    this.appendChild(firebaseController);
-    PubSubLoader();
   }
   connectedCallback() {
-    // if (!this.user) {
-    // }
+    super.connectedCallback();
     window.onhashchange = this._locationHashChanged;
     if (!window.location.hash) {
       window.location.hash = this._hashbang('home');
@@ -312,7 +308,6 @@ export default class TapGame extends HTMLElement {
   _locationHashChanged(change) {
     let parts = change.newURL.split('#');
     this._beforeNavigation();
-    console.log(parts);
     if (parts[1].includes('play') && !parts[1].includes('level')) {
       this._gameHash();
     } else if (parts[1].includes('level-')) {
@@ -459,13 +454,6 @@ export default class TapGame extends HTMLElement {
       this._gameDialog.opened = false;
     }
     this._locationHashChanged({newURL: window.location.hash});
-  }
-
-  /**
-   * HashBang url (adds a ! infront)
-   */
-  _hashbang(string) {
-    return `!/${string}`;
   }
   // TODO: import pages (shards) when idle
 }
