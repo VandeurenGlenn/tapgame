@@ -228,6 +228,9 @@
       custom-navigation-item {
         --custom-button-min-width: 132px;
       }
+      .__condensed-title {
+        text-transform: uppercase;
+      }
     </style>
   </head>
   <body>
@@ -276,9 +279,9 @@
                 </template>
               </custom-template-if>
 
-              <custom-navigation-item>highscores</custom-navigation-item>
-              <custom-navigation-item disabled>achievements</custom-navigation-item>
-              <custom-navigation-item disabled>ranking</custom-navigation-item>
+              <custom-navigation-item route="highscores" hashbang>highscores</custom-navigation-item>
+              <custom-navigation-item route="achievements" hashbang disabled>achievements</custom-navigation-item>
+              <custom-navigation-item route="ranking" hashbang disabled>ranking</custom-navigation-item>
             </span>
           </custom-container>
         </custom-section>
