@@ -139,21 +139,7 @@
         bottom: 24px;
         right: 24px;
       }
-      @media (min-width: 400px) {
-        .apptitle {
-          font-size: 48px;
-        }
-        custom-fab {
-          bottom: 48px;
-          right: 48px;
-        }
-      }
-      @media (min-width: 960px) {
-        custom-fab {
-          bottom: 56px;
-          right: 56px;
-        }
-      }
+
       custom-pages custom-section, custom-dialog {
         opacity: 0;
         display: none;
@@ -229,7 +215,52 @@
         --custom-button-min-width: 132px;
       }
       .__condensed-title {
+        position: absolute;
+        top: -2px;
+        left: 56px;
+        font-size: 24px;
         text-transform: uppercase;
+      }
+
+      array-repeat.__level-list {
+        display: flex;
+        flex-direction: column;
+      }
+      array-repeat.__level-list level-item {
+        max-width: none;
+      }
+      custom-section[name="select-level"] {
+        max-width: none;
+        width: auto;
+      }
+      @media (min-width: 360px) {
+        array-repeat.__level-list {
+          display: flex;
+          flex-flow: row wrap;
+          justify-content: space-around;
+          max-width: calc(120px * 5);
+        }
+        custom-section[name="select-level"] custom-container {
+          padding: 48px;
+        }
+        custom-section[name="select-level"] {
+          width: 100%;
+        }
+      }
+      @media (min-width: 400px) {
+        .apptitle {
+          font-size: 48px;
+        }
+        custom-fab {
+          bottom: 48px;
+          right: 48px;
+        }
+      }
+      @media (min-width: 960px) {
+        custom-fab {
+          bottom: 56px;
+          right: 56px;
+        }
       }
     </style>
   </head>
@@ -253,7 +284,7 @@
           <div class="game-counter stretch align-right"></div>
         </div>
       </custom-header>
-      <custom-pages animations='{"home": {"delay": 300, "in": "translateY(100%)", "transition-delay": 600, "out": "translateY(-100%)"}, "playfield": {"delay": 300, "in": "translateY(-100%)", "transition-delay": 300, "out": "translateY(100%)"}, "highscores": {"delay": 300, "in": "translateY(-100%)", "transition-delay": 300, "out": "translateY(100%)"}}'>
+      <custom-pages animations='{"home": {"delay": 300, "in": "translateY(100%)", "transition-delay": 600, "out": "translateY(-100%)"}, "playfield": {"delay": 300, "in": "translateY(-100%)", "transition-delay": 300, "out": "translateY(100%)"}, "select-level": {"delay": 300, "in": "translateY(-100%)", "transition-delay": 300, "out": "translateY(100%)"}, "highscores": {"delay": 300, "in": "translateY(-100%)", "transition-delay": 300, "out": "translateY(100%)"}}'>
         <custom-section name="home">
           <custom-container>
             <span class="button-wrapper">
@@ -275,7 +306,7 @@
                       --custom-button-min-width: 132px;
                     }
                   </style>
-                  <custom-navigation-item route="select-level" hashbang disabled>select level</custom-navigation-item>
+                  <custom-navigation-item route="select-level" hashbang>select level</custom-navigation-item>
                 </template>
               </custom-template-if>
 
@@ -291,19 +322,14 @@
           </custom-container>
         </custom-section>
         <custom-section name="highscores">
-          <custom-container list>
-            <span class="horizontal">
-              <h4>name</h4>
-              <span class="flex"></span>
-              <h4>score</h4>
-            </span>
-            <array-repeat class="__highscores-list">
+          <game-highscores></game-highscores>
+        </custom-section>
+
+        <custom-section name="select-level">
+          <custom-container grid>
+            <array-repeat class="__level-list">
               <template>
-                <span style="display: flex; flex-direction: row; align-items: center; width: 100%;">
-                  [[item.name]]
-                  <span style="flex: 1;"></span>
-                  [[item.score]]
-                </span>
+                <level-item></level-item>
               </template>
             </array-repeat>
           </custom-container>

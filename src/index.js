@@ -6,8 +6,10 @@ import './elements/custom-section.js';
 import './elements/custom-container.js';
 import './elements/custom-count-down.js';
 import './elements/tap-button.js';
+import './elements/level-item.js';
 import './elements/custom-icons.js';
 import './elements/custom-navigation-item.js';
+import './elements/game-highscores.js';
 import './../bower_components/array-repeat/dist/array-repeat.es.js';
 import './../bower_components/custom-template-if/src/custom-template-if.js';
 import CustomNotification from './elements/custom-notification.js';
@@ -39,8 +41,22 @@ export default class TapGame extends AppController {
     this._tapButton.addEventListener('tap', this._onClick);
     this._refreshButton.addEventListener('click', this.refresh);
     this._loginButton.addEventListener('tap', this._onLoginButtonTap);
-    PubSub.subscribe('firebase.ready', this._onFirebaseReady)
+    PubSub.subscribe('firebase.ready', this._onFirebaseReady);
+    requestIdleCallback(() => {
+      this.querySelector('.__level-list').items = levels;
+    })
+  }
 
+  set selected(value) {
+    this._selected = value;
+    this.pages.selected = value;
+  }
+
+  set level(value) {
+    if (this.player) {
+      this.player.level = value;
+    }
+    this._level = value;
   }
 
   get _loginButton() {
@@ -59,13 +75,12 @@ export default class TapGame extends AppController {
     return this.querySelector('custom-pages');
   }
 
-  set selected(value) {
-    this._selected = value;
-    this.pages.selected = value;
-  }
-
   get level() {
-    return this.player ? this.player.level : 0;
+    let level = this._level || 0;
+    const player = this.player;
+    if (player)
+      level = player.level;
+    return level;
   }
 
   get _loginDialog() {
@@ -231,10 +246,6 @@ export default class TapGame extends AppController {
   }
 
   _onFirebaseReady() {
-    firebase.database().ref('highscores').on('value', snapshot => {
-      const highscores = snapshot.val();
-      this.querySelector('array-repeat').items = highscores[0];
-    });
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
         firebase.database().ref('users/' + user.uid).on('value', snapshot => {
@@ -280,9 +291,10 @@ export default class TapGame extends AppController {
   }
 
   loadLevel(level) {
+    this.level = level;
     this._hideToolbar();
     this.taps = 0;
-    PubSub.publish('level.change', level);
+    PubSub.publish('level.change', levels[level]);
     this.startCountDown();
   }
 
@@ -315,7 +327,7 @@ export default class TapGame extends AppController {
       parts = parts[1].split('/');
       for (let part of parts) {
         if (part.includes('level')) {
-          this.loadLevel(levels[part.split('-')[1]]);
+          this.loadLevel(part.split('-')[1]);
         }
       }
       this.selected = 'playfield';
@@ -409,7 +421,9 @@ export default class TapGame extends AppController {
       const highscoresLocation =
         `highscores/${this.level}`;
 
-
+      /**
+       * read & write highscores
+       */
       firebase.database()
         .ref(userHighscoresLocation)
         .once('value', snapshot => {
@@ -417,18 +431,15 @@ export default class TapGame extends AppController {
           if (value === null || value !== null && value < taps) {
             firebase.database().ref(userHighscoresLocation).set(taps);
             firebase.database().ref(highscoresLocation).once('value', snapshot => {
-              const holder = snapshot.val();
-              if (holder === null) {
-                firebase.database().ref(highscoresLocation).set({topScore: taps});
-                firebase.database().ref(highscoresLocation).push({name: this.user.displayName, score: taps});
-              } else {
-                if (holder.topScore < taps) {
-                  firebase.database().ref(highscoresLocation).set({topScore: taps});
-                  firebase.database().ref(highscoresLocation).push({name: this.user.displayName, score: taps});
-                } else if (holder.topScore === taps) {
-                  firebase.database().ref(highscoresLocation).push({name: this.user.displayName, score: taps});
-                }
-              }
+              const holders = snapshot.val();
+              if (holders === null)
+                firebase.database()
+                  .ref(`/${highscoresLocation}/${this.user.uid}`)
+                  .set({name: this.user.displayName, score: taps});
+              else
+                firebase.database()
+                  .ref(`/${highscoresLocation}/${this.user.uid}`)
+                  .set({name: this.user.displayName, score: taps});
             });
             this.showNotification(this._newUID, 'New Highscore!');
             this.gameDialogHighScores.innerHTML = 'New Highscore!';
