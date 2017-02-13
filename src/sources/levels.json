@@ -1,7 +1,7 @@
 export default [
   {
     "tapSize": "200",
-    "time": 1000,
+    "time": 5000,
     "goal": 100
   }, {
     "tapSize": "180",
