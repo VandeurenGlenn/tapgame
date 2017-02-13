@@ -10,9 +10,7 @@ export default class CustomButton extends HTMLElement {
    }
 	connectedCallback() {
 		this.addEventListener('mousedown', this._down, {capture: false});
-		this.addEventListener('touchstart', this._down, {capture: false});
 		this.addEventListener('mouseup', this._up, {capture: false});
-		this.addEventListener('touchend', this._up, {capture: false});
 	}
 	_down(event) {
     event.preventDefault();
