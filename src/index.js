@@ -103,7 +103,7 @@ export default class TapGame extends AppController {
     return this._gameDialog.querySelector('.goal');
   }
 
-  get gameDialogHighScores() {
+  get _gameDialogHighScores() {
     return this.querySelector('.__dialog-highscores');
   }
 
@@ -146,7 +146,7 @@ export default class TapGame extends AppController {
 
   set taps(value) {
     this._taps = value;
-    this._tapCounterElement.innerHTML = value;
+    this._updateInnerHTML(this._tapCounterElement, value);
   }
 
   get _refreshButton() {
@@ -155,11 +155,17 @@ export default class TapGame extends AppController {
 
   set userOnline(value) {
     if (value) {
-      this._loginButton.innerHTML = 'sign out';
+      this._updateInnerHTML(this._loginButton, 'sign out');
     } else {
-      this._loginButton.innerHTML = 'sign in';
+      this._updateInnerHTML(this._loginButton, 'sign in');
     }
     this._userOnline = value;
+  }
+
+  _updateInnerHTML(element, value) {
+    requestAnimationFrame(() => {
+      element.innerHTML = value;
+    });
   }
 
   _setupComponent(name, proto, options={properties: [], attributes: []}) {
@@ -304,7 +310,7 @@ export default class TapGame extends AppController {
   }
 
   _beforeNavigation() {
-    this._condensedTitle.innerHTML = null;
+    this._updateInnerHTML(this._condensedTitle, null);
     this.taps = null;
     if (this._countDownWorker) {
       this._countDownWorker.terminate();
@@ -336,7 +342,7 @@ export default class TapGame extends AppController {
         this._showToolbar();
       } else {
         this._hideToolbar();
-        this._condensedTitle.innerHTML = parts[1].replace('!/', '');
+        this._updateInnerHTML(this._condensedTitle, parts[1].replace('!/', ''));
       }
       this.selected = parts[1].replace('!/', '');
     }
@@ -352,7 +358,7 @@ export default class TapGame extends AppController {
 
   _onCountDownMessage(message) {
     let number = message.data.value;
-    this._countDownElement.innerHTML = number;
+    this._updateInnerHTML(this._countDownElement, number);
     if (number === 0) {
       this._countDownWorker.terminate();
       this._countDownElement.counting = false;
@@ -375,7 +381,7 @@ export default class TapGame extends AppController {
           this._endGame();
           break;
         case 'count':
-          this._gameCounterElement.innerHTML = data.value;
+          this._updateInnerHTML(this._gameCounterElement, data.value);
           break;
       }
     })
@@ -406,14 +412,14 @@ export default class TapGame extends AppController {
     }
 
     if (win()) {
-      this._gameDialogTitle.innerHTML = 'level complete';
-      this.gameDialogHighScores.innerHTML = 'Great Job!';
+      this._updateInnerHTML(this._gameDialogTitle, 'level complete');
+      this._updateInnerHTML(this._gameDialogHighScores, 'Great Job!');
     } else {
-      this.gameDialogHighScores.innerHTML = 'Better luck next time';
-      this._gameDialogTitle.innerHTML = 'level failed';
+      this._updateInnerHTML(this._gameDialogHighScores, 'Better luck next time');
+      this._updateInnerHTML(this._gameDialogTitle, 'level failed');
     }
-    this._gameDialogResult.innerHTML = taps;
-    this._gameDialogGoal.innerHTML = goal;
+    this._updateInnerHTML(this._gameDialogResult, taps);
+    this._updateInnerHTML(this._gameDialogGoal, goal);
 
     if (this.userOnline) {
       const userHighscoresLocation =
@@ -442,15 +448,15 @@ export default class TapGame extends AppController {
                   .set({name: this.user.displayName, score: taps});
             });
             this.showNotification(this._newUID, 'New Highscore!');
-            this.gameDialogHighScores.innerHTML = 'New Highscore!';
+            this._updateInnerHTML(this._gameDialogHighScores, 'New Highscore!');
           }
       })
     } else {
-      this.gameDialogHighScores.innerHTML = `
+      this._updateInnerHTML(this._gameDialogHighScores, `
       <h3>Submit score</h3>
       <input type="text">
       not supported yet, please login to submit scores.
-      `;
+      `);
     }
 
     this._gameDialog.opened = true;
