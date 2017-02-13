@@ -36,15 +36,19 @@ export default class TapGame extends AppController {
     } else {
       this._locationHashChanged({newURL: window.location.hash})
     }
-    this._loginButton.addEventListener('tap', this._onLoginButtonTap);
-    // this._highscoresButton.addEventListener('click', this._startGame);
-    this._tapButton.addEventListener('tap', this._onClick);
-    this._refreshButton.addEventListener('click', this.refresh);
-    this._loginButton.addEventListener('tap', this._onLoginButtonTap);
+    this._tapButton.addEventListener('tap', this._onClick, {capture: false});
+    this._refreshButton.addEventListener('click', this.refresh, {capture: false});
+    this._loginButton.addEventListener('tap', this._onLoginButtonTap, {capture: false});
     PubSub.subscribe('firebase.ready', this._onFirebaseReady);
     requestIdleCallback(() => {
       this.querySelector('.__level-list').items = levels;
-    })
+    });
+  }
+
+  disconnectedCallback() {
+    this._tapButton.removeEventListener('tap', this._onClick);
+    this._refreshButton.removeEventListener('click', this.refresh);
+    this._loginButton.removeEventListener('tap', this._onLoginButtonTap);
   }
 
   set selected(value) {

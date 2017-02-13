@@ -6,6 +6,7 @@
       left: 0;
       right: 0;
       bottom: 0;
+      will-change: transform;
     }
     .container {
       height: 100%;
@@ -21,10 +22,12 @@
     }
     .container ::slotted(*) {
       display: none;
+      opacity: 0;
+      pointer-events: none;
     }
     .container ::slotted(*.custom-selected) {
-      display: block;
       opacity: 1 !important;
+      pointer-events: auto;
     }
   </style>
   <span class="container">

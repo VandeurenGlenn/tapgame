@@ -12,9 +12,13 @@ export default class CustomDialog extends HTMLElement {
   set opened(value) {
     this._opened = value;
     if (value) {
-      this.classList.add('opened');
+      requestAnimationFrame(() => {
+        this.classList.add('opened');
+      });
     } else {
-      this.classList.remove('opened');
+      requestAnimationFrame(() => {
+        this.classList.remove('opened');
+      });
     }
   }
   get opened() {

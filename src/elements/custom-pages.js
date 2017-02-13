@@ -63,6 +63,7 @@ export default class CustomPages extends HTMLElement {
       const animation = this.animations[name];
       if (animation) {
         let el = this.querySelector(`*[${this.attrForSelected}="${name}"]`);
+        el.style.willChange = 'transform';
         if (out) {
           requestAnimationFrame(() => {
             el.style.transform = animation.out;
