@@ -15,11 +15,17 @@ export default class CustomButton extends HTMLElement {
 		this.addEventListener('touchend', this._up, {capture: false});
 	}
 	_down(event) {
-		this.classList.add('pressed');
+    event.preventDefault();
+    requestAnimationFrame(() => {
+    		this.classList.add('pressed');
+    });
 	}
 	_up(event) {
-		this.classList.remove('pressed');
-		this.dispatchEvent(new CustomEvent('tap', {bubbles: false}));
+    event.preventDefault();
+    requestAnimationFrame(() => {
+      this.classList.remove('pressed');
+    	this.dispatchEvent(new CustomEvent('tap', {bubbles: false}));
+    });
 	}
    attributeChangedCallback(name, oldVal, newVal) {
      if (oldVal !== newVal) {
