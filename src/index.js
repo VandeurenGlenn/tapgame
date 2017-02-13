@@ -41,7 +41,7 @@ export default class TapGame extends AppController {
     this._loginButton.addEventListener('tap', this._onLoginButtonTap, {capture: false});
     PubSub.subscribe('firebase.ready', this._onFirebaseReady);
     requestIdleCallback(() => {
-      this.querySelector('.__level-list').items = levels;
+      this._levelList.items = levels;
     });
   }
 
@@ -63,6 +63,19 @@ export default class TapGame extends AppController {
     this._level = value;
   }
 
+  set player(value) {
+    console.warn(value);
+    this._player = value;
+  }
+
+  get player() {
+    return this._player || {};
+  }
+
+  get _levelList() {
+    return this.querySelector('.__level-list');
+  }
+
   get _loginButton() {
     return this.querySelector('.login-button');
   }
@@ -82,8 +95,10 @@ export default class TapGame extends AppController {
   get level() {
     let level = this._level || 0;
     const player = this.player;
+    console.log(player);
     if (player)
-      level = player.level;
+      level = player.progress;
+      console.log(level);
     return level;
   }
 
@@ -255,6 +270,10 @@ export default class TapGame extends AppController {
     }
   }
 
+  _notify(property, value) {
+    this[property] = value;
+  }
+
   _onFirebaseReady() {
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
@@ -262,6 +281,31 @@ export default class TapGame extends AppController {
           let value = snapshot.val();
           if (value === null) {
             this._addUser(user);
+          } else {
+            // TODO: link local data with firabase, load local first
+            // get the last level played.
+            const highscores = value.highscores;
+            const player = this.player;
+            if (highscores) {
+              player.progress = highscores.length;
+              this._notify('player', player);
+            } else {
+              player.progress = 0;
+              this._notify('player', player);
+            }
+
+            for (let child of this._levelList.root.children) {
+              let dataIndex = child.dataIndex;
+              if (child.localName !== 'style' && dataIndex > player.progress) {
+                child.innerHTML = `<svg-icon icon="lock"></svg-icon>`;
+                child.setAttribute('locked', '');
+                child.setAttribute('title', `complete level ${dataIndex} to unlock`);
+              } else {
+                child.dataIndex = dataIndex;
+                child.removeAttribute('locked');
+              }
+            }
+            PubSub.publish('player.progress', player.progress);
           }
           this.showNotification(
             this._newUID, 'Welcome, ' + user.displayName + '!');
@@ -271,7 +315,6 @@ export default class TapGame extends AppController {
         this.userOnline = false;
       }
       this.user = user;
-      PubSub.publish('player.progress', true);
     });
   }
 
@@ -281,8 +324,7 @@ export default class TapGame extends AppController {
       email: user.email,
       photoURL: user.photoURL
 
-    })
-    console.log(user);
+    });
   }
 
   _selectLevel(event) {

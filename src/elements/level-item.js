@@ -19,7 +19,7 @@ class LevelItem extends HTMLElement {
   }
   set dataIndex(value) {
     this.innerHTML = (Number(value) + 1);
-    this._dataIndex = (Number(value) + 1);
+    this._dataIndex = value;
   }
   get dataIndex() {
     return this._dataIndex;
@@ -33,6 +33,9 @@ class LevelItem extends HTMLElement {
   }
   _click(event) {
     event.preventDefault();
+    if (this.hasAttribute('locked')) {
+      return;
+    }
     location.hash = `!/play/level-${this.dataIndex}`;
   }
 }
